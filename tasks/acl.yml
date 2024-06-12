@@ -4,7 +4,7 @@
   when:
     - bootstrap_state.stat.exists | bool
     - (consul_acl_master_token is not defined or consul_acl_master_token | length == 0)
-    - consul_node_role == 'server'
+    - consul_node_role == 'server' or consul_node_role == 'bootstrap'
   block:
     - name: Read ACL master token from previously boostrapped server
       ansible.builtin.command: cat {{ consul_config_path }}/config.json
@@ -32,7 +32,7 @@
   when:
     - (consul_acl_master_token is not defined or consul_acl_master_token | length == 0)
     - not bootstrap_state.stat.exists | bool
-    - consul_node_role == 'server'
+    - consul_node_role == 'server' or consul_node_role == 'bootstrap'
   block:
     - name: Generate ACL master token # noqa no-changed-when
       ansible.builtin.command: echo {{ lookup('password', '/dev/null length=32 chars=ascii_letters') | to_uuid }}
@@ -51,13 +51,13 @@
   run_once: true
   when:
     - consul_acl_master_token_display | bool
-    - consul_node_role == 'server'
+    - consul_node_role == 'server' or consul_node_role == 'bootstrap'
 
 - name: Save existing ACL replication token
   when:
     - bootstrap_state.stat.exists | bool
     - (consul_acl_replication_token is not defined or consul_acl_replication_token | length == 0)
-    - consul_node_role == 'server'
+    - consul_node_role == 'server' or consul_node_role == 'bootstrap'
   block:
     - name: Read ACL master token from previously boostrapped server
       ansible.builtin.command: cat {{ consul_config_path }}/config.json
@@ -77,7 +77,7 @@
   when:
     - (consul_acl_replication_token is not defined or consul_acl_replication_token | length == 0)
     - not bootstrap_state.stat.exists | bool
-    - consul_node_role == 'server'
+    - consul_node_role == 'server' or consul_node_role == 'bootstrap'
   block:
     - name: Generate ACL replication token # noqa no-changed-when
       ansible.builtin.command: echo {{ lookup('password', '/dev/null length=32 chars=ascii_letters') | to_uuid }}
